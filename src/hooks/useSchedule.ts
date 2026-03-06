@@ -1,13 +1,43 @@
 import { useState, useEffect } from "react";
-import { Nurse, ScheduleState, DaySchedule } from "@/types";
-import { getDaysInMonth, format, setDate } from "date-fns";
+import { Nurse, DaySchedule } from "@/types";
+import { getDaysInMonth, format } from "date-fns";
+
+const NURSES_STORAGE_KEY = "turno-enfermagem:nurses";
 
 export function useSchedule() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [nurses, setNurses] = useState<Nurse[]>([]);
+  const [nurses, setNurses] = useState<Nurse[]>(() => {
+    if (typeof window === "undefined") return [];
+
+    try {
+      const stored = window.localStorage.getItem(NURSES_STORAGE_KEY);
+      if (!stored) return [];
+
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return [];
+
+      return parsed.filter(
+        (n): n is Nurse =>
+          typeof n?.id === "string" &&
+          typeof n?.name === "string" &&
+          (n?.role === "padrao" || n?.role === "folguista") &&
+          typeof n?.color === "string",
+      );
+    } catch {
+      return [];
+    }
+  });
   const [assignments, setAssignments] = useState<Record<string, DaySchedule>>(
     {},
   );
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(NURSES_STORAGE_KEY, JSON.stringify(nurses));
+    } catch {
+      // Ignore persistence errors (private mode or quota issues)
+    }
+  }, [nurses]);
 
   // Helper to get assignment for a specific date, creating it if missing
   const getAssignment = (dateStr: string): DaySchedule => {
@@ -96,7 +126,33 @@ export function useSchedule() {
       role,
       color: color,
     };
-    setNurses([...nurses, newNurse]);
+    setNurses((prev) => [...prev, newNurse]);
+  };
+
+  const removeNurse = (nurseId: string) => {
+    setNurses((prev) => prev.filter((n) => n.id !== nurseId));
+    setAssignments((prev) => {
+      const updated: Record<string, DaySchedule> = {};
+
+      for (const [dateStr, schedule] of Object.entries(prev)) {
+        const diurno =
+          schedule.diurno.nurseId === nurseId
+            ? { nurseId: null, isFolga: false }
+            : schedule.diurno;
+        const noturno =
+          schedule.noturno.nurseId === nurseId
+            ? { nurseId: null, isFolga: false }
+            : schedule.noturno;
+
+        updated[dateStr] = {
+          ...schedule,
+          diurno,
+          noturno,
+        };
+      }
+
+      return updated;
+    });
   };
 
   const generateMonthSchedule = (
@@ -143,6 +199,7 @@ export function useSchedule() {
     assignments,
     updateAssignment,
     addNurse,
+    removeNurse,
     getAssignment,
     generateMonthSchedule,
   };

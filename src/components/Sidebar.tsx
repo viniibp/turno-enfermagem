@@ -11,6 +11,7 @@ interface SidebarProps {
     role: "padrao" | "folguista",
     color: string,
   ) => void;
+  onRemoveNurse: (nurseId: string) => void;
   onOpenAutoSchedule: () => void;
   onCloseMobile?: () => void;
 }
@@ -18,6 +19,7 @@ interface SidebarProps {
 export function Sidebar({
   nurses,
   onAddNurse,
+  onRemoveNurse,
   onOpenAutoSchedule,
   onCloseMobile,
 }: SidebarProps) {
@@ -235,6 +237,26 @@ export function Sidebar({
                       </p>
                       <p className="text-slate-500 text-xs">Padrao</p>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => onRemoveNurse(nurse.id)}
+                      className="ml-auto rounded-md p-2 text-slate-500 hover:bg-slate-700 hover:text-rose-300 transition-colors"
+                      aria-label={`Apagar ${nurse.name}`}
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 7h12M9 7V5h6v2m-7 0v12m4-12v12m4-12v12M5 7l1 13h12l1-13"
+                        />
+                      </svg>
+                    </button>
                   </div>
                 ))}
             </div>
@@ -266,6 +288,26 @@ export function Sidebar({
                       </p>
                       <p className="text-slate-500 text-xs">Folguista</p>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => onRemoveNurse(nurse.id)}
+                      className="ml-auto rounded-md p-2 text-slate-500 hover:bg-slate-700 hover:text-rose-300 transition-colors"
+                      aria-label={`Apagar ${nurse.name}`}
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 7h12M9 7V5h6v2m-7 0v12m4-12v12m4-12v12M5 7l1 13h12l1-13"
+                        />
+                      </svg>
+                    </button>
                   </div>
                 ))}
             </div>

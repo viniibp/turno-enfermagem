@@ -28,6 +28,7 @@ export function App() {
     updateAssignment,
     getAssignment,
     addNurse,
+    removeNurse,
     generateMonthSchedule,
   } = useSchedule();
   const [selectedDay, setSelectedDay] = useState<DaySchedule | null>(null);
@@ -105,6 +106,7 @@ export function App() {
           <Sidebar
             nurses={nurses}
             onAddNurse={addNurse}
+            onRemoveNurse={removeNurse}
             onOpenAutoSchedule={() => {
               setIsAutoScheduleOpen(true);
               setIsSidebarOpen(false);
