@@ -1,0 +1,1 @@
+{"root":["./eslint.config.js","./vite.config.ts","./src/app.tsx","./src/main.tsx","./src/components/autoschedulemodal.tsx","./src/components/daymodal.tsx","./src/components/sidebar.tsx","./src/constants/colors.ts","./src/hooks/useschedule.ts","./src/lib/utils.ts","./src/types/index.ts"],"version":"5.9.3"}

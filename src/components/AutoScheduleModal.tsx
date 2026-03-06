@@ -69,7 +69,7 @@ export function AutoScheduleModal({
         </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div className="flex min-h-full items-center justify-center p-3 text-center sm:p-4">
             <TransitionChild
               as={Fragment}
               enter="ease-out duration-300"
@@ -79,16 +79,15 @@ export function AutoScheduleModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-slate-800 p-8 text-left align-middle shadow-xl transition-all border border-slate-700">
+              <DialogPanel className="w-full max-w-2xl transform overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 p-4 text-left align-middle shadow-xl transition-all sm:p-8">
                 <DialogTitle
                   as="h3"
-                  className="text-xl font-bold leading-6 text-white mb-6"
+                  className="mb-5 text-lg font-bold leading-6 text-white sm:mb-6 sm:text-xl"
                 >
-                  Configurar Escala Padrão (Par/Ímpar)
+                  Configurar Escala Padrao (Par/Impar)
                 </DialogTitle>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Diurno Column */}
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 text-yellow-400 font-semibold border-b border-slate-700 pb-2">
                       <svg
@@ -104,7 +103,7 @@ export function AutoScheduleModal({
                           d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
                         />
                       </svg>
-                      <h3>Plantão Diurno</h3>
+                      <h3>Plantao Diurno</h3>
                     </div>
 
                     <div className="space-y-4">
@@ -128,7 +127,7 @@ export function AutoScheduleModal({
 
                       <div>
                         <label className="block text-sm font-medium text-slate-400 mb-1">
-                          Dias Ímpares (1, 3, 5...)
+                          Dias Impares (1, 3, 5...)
                         </label>
                         <select
                           value={diurnoImpar}
@@ -146,7 +145,6 @@ export function AutoScheduleModal({
                     </div>
                   </div>
 
-                  {/* Noturno Column */}
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 text-indigo-400 font-semibold border-b border-slate-700 pb-2">
                       <svg
@@ -162,7 +160,7 @@ export function AutoScheduleModal({
                           d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
                         />
                       </svg>
-                      <h3>Plantão Noturno</h3>
+                      <h3>Plantao Noturno</h3>
                     </div>
 
                     <div className="space-y-4">
@@ -186,7 +184,7 @@ export function AutoScheduleModal({
 
                       <div>
                         <label className="block text-sm font-medium text-slate-400 mb-1">
-                          Dias Ímpares (1, 3, 5...)
+                          Dias Impares (1, 3, 5...)
                         </label>
                         <select
                           value={noturnoImpar}
@@ -205,7 +203,7 @@ export function AutoScheduleModal({
                   </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-slate-700 flex justify-end gap-3">
+                <div className="mt-6 pt-5 border-t border-slate-700 flex flex-col-reverse gap-2 sm:mt-8 sm:pt-6 sm:flex-row sm:justify-end sm:gap-3">
                   <button
                     type="button"
                     className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
@@ -218,7 +216,7 @@ export function AutoScheduleModal({
                     className="px-6 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-colors shadow-lg shadow-blue-900/20"
                     onClick={handleGenerate}
                   >
-                    Gerar Escala Automática
+                    Gerar Escala Automatica
                   </button>
                 </div>
               </DialogPanel>
