@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import html2canvas from "html2canvas";
 import { useSchedule } from "@/hooks/useSchedule";
 import { Sidebar } from "@/components/Sidebar";
 import { DayModal } from "@/components/DayModal";
@@ -35,6 +36,9 @@ export function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutoScheduleOpen, setIsAutoScheduleOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [isCaptureOptionsOpen, setIsCaptureOptionsOpen] = useState(false);
+  const calendarCaptureRef = useRef<HTMLDivElement | null>(null);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(monthStart);
@@ -83,6 +87,123 @@ export function App() {
       "bg-indigo-600": "text-indigo-200 bg-indigo-500/20",
     };
     return colorMap[colorClass] || "text-slate-200 bg-slate-500/20";
+  };
+
+  const captureCalendarCanvas = async () => {
+    if (!calendarCaptureRef.current || isCapturing) return;
+
+    setIsCapturing(true);
+    const source = calendarCaptureRef.current;
+    const exportWrapper = document.createElement("div");
+    const exportClone = source.cloneNode(true) as HTMLDivElement;
+    const exportWidth = Math.max(source.scrollWidth, source.offsetWidth);
+    const exportHeight = Math.max(source.scrollHeight, source.offsetHeight);
+
+    exportWrapper.style.position = "fixed";
+    exportWrapper.style.left = "0";
+    exportWrapper.style.top = "0";
+    exportWrapper.style.padding = "0";
+    exportWrapper.style.margin = "0";
+    exportWrapper.style.background = "#020617";
+    exportWrapper.style.overflow = "visible";
+    exportWrapper.style.zIndex = "-1";
+
+    exportClone.style.width = `${exportWidth}px`;
+    exportClone.style.minWidth = `${exportWidth}px`;
+    exportClone.style.height = `${exportHeight}px`;
+    exportClone.style.overflow = "visible";
+
+    exportWrapper.appendChild(exportClone);
+    document.body.appendChild(exportWrapper);
+
+    try {
+      return await html2canvas(exportClone, {
+        backgroundColor: "#020617",
+        scale: Math.min(window.devicePixelRatio || 1, 2),
+        useCORS: true,
+        logging: false,
+        foreignObjectRendering: true,
+        width: exportWidth,
+        height: exportHeight,
+        windowWidth: exportWidth,
+        windowHeight: exportHeight,
+        scrollX: 0,
+        scrollY: 0,
+      });
+    } finally {
+      document.body.removeChild(exportWrapper);
+      setIsCapturing(false);
+    }
+  };
+
+  const handleDownloadCalendarImage = async () => {
+    const canvas = await captureCalendarCanvas();
+    if (!canvas) return;
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const downloadLink = document.createElement("a");
+    downloadLink.href = dataUrl;
+    downloadLink.download = `escala-${format(currentDate, "yyyy-MM")}.png`;
+    downloadLink.click();
+  };
+
+  const handleShareCalendarImage = async () => {
+    const canvas = await captureCalendarCanvas();
+    if (!canvas) return;
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((result) => resolve(result), "image/png"),
+    );
+    if (!blob) return;
+
+    const fileName = `escala-${format(currentDate, "yyyy-MM")}.png`;
+    const file = new File([blob], fileName, { type: "image/png" });
+
+    if (
+      navigator.share &&
+      typeof navigator.canShare === "function" &&
+      navigator.canShare({ files: [file] })
+    ) {
+      await navigator.share({
+        title: "Escala de Enfermagem",
+        text: `Escala ${format(currentDate, "MMMM yyyy", { locale: ptBR })}`,
+        files: [file],
+      });
+      return;
+    }
+
+    if (navigator.clipboard && "ClipboardItem" in window) {
+      try {
+        const clipboardItem = new ClipboardItem({ "image/png": blob });
+        await navigator.clipboard.write([clipboardItem]);
+        window.alert("Imagem copiada. Agora voce pode colar onde quiser.");
+        return;
+      } catch {
+        // fall through to download
+      }
+    }
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const downloadLink = document.createElement("a");
+    downloadLink.href = dataUrl;
+    downloadLink.download = fileName;
+    downloadLink.click();
+  };
+
+  const handleCaptureAction = async (mode: "share" | "download") => {
+    setIsCaptureOptionsOpen(false);
+    try {
+      if (mode === "share") {
+        await handleShareCalendarImage();
+        return;
+      }
+      await handleDownloadCalendarImage();
+    } catch (error) {
+      console.error("Falha ao exportar imagem da escala:", error);
+      window.alert(
+        "Nao foi possivel gerar a imagem agora. Tente novamente em alguns segundos.",
+      );
+    }
   };
 
   return (
@@ -195,25 +316,40 @@ export function App() {
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-2 text-xs sm:grid-cols-3 sm:gap-4 sm:text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-900/50 border border-blue-500/30" />
-                <span className="text-slate-400">Dia Impar</span>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-3 sm:gap-4 sm:text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-900/50 border border-blue-500/30" />
+                  <span className="text-slate-400">Dia Impar</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-rose-900/50 border border-rose-500/30" />
+                  <span className="text-slate-400">Dia Par</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-amber-900/50 border border-amber-500/30" />
+                  <span className="text-slate-400">Folga</span>
+                </div>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-rose-900/50 border border-rose-500/30" />
-                <span className="text-slate-400">Dia Par</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-amber-900/50 border border-amber-500/30" />
-                <span className="text-slate-400">Folga</span>
+                <button
+                  type="button"
+                  onClick={() => setIsCaptureOptionsOpen(true)}
+                  disabled={isCapturing}
+                  className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-200 transition-colors hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isCapturing ? "Gerando imagem..." : "Exportar imagem"}
+                </button>
               </div>
             </div>
           </header>
 
           <div className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8">
             <div className="overflow-x-auto pb-2">
-              <div className="grid min-w-[760px] grid-cols-7 gap-px overflow-hidden rounded-2xl border border-slate-800 bg-slate-800 shadow-2xl">
+              <div
+                ref={calendarCaptureRef}
+                className="grid min-w-[760px] grid-cols-7 gap-px overflow-hidden rounded-2xl border border-slate-800 bg-slate-800 shadow-2xl"
+              >
                 {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"].map((day) => (
                   <div
                     key={day}
@@ -357,6 +493,39 @@ export function App() {
         nurses={nurses}
         onGenerate={generateMonthSchedule}
       />
+
+      {isCaptureOptionsOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center">
+          <button
+            type="button"
+            className="absolute inset-0"
+            onClick={() => setIsCaptureOptionsOpen(false)}
+            aria-label="Fechar opcoes de imagem"
+          />
+          <div className="relative w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-4 shadow-2xl">
+            <h3 className="text-sm font-semibold text-white">Exportar escala</h3>
+            <p className="mt-1 text-xs text-slate-400">
+              Deseja compartilhar agora ou baixar a imagem?
+            </p>
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => void handleCaptureAction("share")}
+                className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-200 hover:bg-slate-700"
+              >
+                Compartilhar
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleCaptureAction("download")}
+                className="rounded-lg border border-slate-700 bg-blue-600 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white hover:bg-blue-500"
+              >
+                Baixar imagem
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
