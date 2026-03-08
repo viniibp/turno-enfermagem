@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Nurse, DaySchedule } from "@/types";
-import { getDaysInMonth, format } from "date-fns";
+import { getDaysInMonth, format, parse } from "date-fns";
 
 const NURSES_STORAGE_KEY = "turno-enfermagem:nurses";
 
@@ -80,16 +80,17 @@ export function useSchedule() {
       // Auto-fill logic for "Even/Odd" days if a standard nurse is selected
       // "ao colocar o diurno em um dia par, ele vai ser automaticamente colocado em todos os dias pares"
       if (nurseId && !isFolga) {
-        const day = parseInt(dateStr.split("-")[2]);
+        const parsedDate = parse(dateStr, "yyyy-MM-dd", new Date());
+        const day = parsedDate.getDate();
         const isEven = day % 2 === 0;
-        const daysInMonth = getDaysInMonth(new Date(dateStr));
+        const daysInMonth = getDaysInMonth(parsedDate);
 
         // Iterate through the month and apply to same parity days
         // ONLY if those days are currently empty or belong to the same nurse (to allow overwrites but prevent accidental wipes)
         // For simplicity based on request, we force overwrite to match the "automaticamente colocado" requirement
         for (let i = 1; i <= daysInMonth; i++) {
           if ((i % 2 === 0) === isEven) {
-            const targetDate = new Date(dateStr);
+            const targetDate = new Date(parsedDate);
             targetDate.setDate(i);
             const targetDateStr = format(targetDate, "yyyy-MM-dd");
 

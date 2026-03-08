@@ -7,8 +7,9 @@ import {
 } from "@headlessui/react";
 import { Fragment, useState, useEffect } from "react";
 import { Nurse, DaySchedule } from "@/types";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface DayModalProps {
   isOpen: boolean;
@@ -53,6 +54,9 @@ export function DayModal({
   const [selectedNoturnoFolguista, setSelectedNoturnoFolguista] = useState(
     daySchedule.noturno.folguistaId || firstFolguistaId,
   );
+  const modalDate = daySchedule.date
+    ? parse(daySchedule.date, "yyyy-MM-dd", new Date())
+    : null;
 
   useEffect(() => {
     setSelectedDiurno(daySchedule.diurno.nurseId);
@@ -114,10 +118,8 @@ export function DayModal({
                   as="h3"
                   className="mb-4 text-base font-medium leading-6 text-white capitalize sm:text-lg"
                 >
-                  {daySchedule.date &&
-                    format(new Date(daySchedule.date), "EEEE, d 'de' MMMM", {
-                      locale: ptBR,
-                    })}
+                  {modalDate &&
+                    format(modalDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
                 </DialogTitle>
 
                 <div className="space-y-4 sm:space-y-6">
@@ -139,7 +141,14 @@ export function DayModal({
                         </svg>
                         Plantao Diurno
                       </h4>
-                      <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                      <label
+                        className={cn(
+                          "inline-flex cursor-pointer select-none items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm transition-colors",
+                          diurnoFolga
+                            ? "border-amber-400/60 bg-amber-500/20 text-amber-100"
+                            : "border-slate-600 bg-slate-800/60 text-slate-300 hover:border-slate-500 hover:bg-slate-700/80",
+                        )}
+                      >
                         <input
                           type="checkbox"
                           checked={diurnoFolga}
@@ -150,9 +159,22 @@ export function DayModal({
                               setSelectedDiurnoFolguista(firstFolguistaId);
                             }
                           }}
-                          className="rounded border-slate-500 bg-slate-800 text-yellow-500 focus:ring-yellow-500/50"
+                          className="peer sr-only"
                         />
-                        Folga (Cobrir)
+                        <span
+                          className={cn(
+                            "relative h-5 w-9 rounded-full transition-colors",
+                            diurnoFolga ? "bg-amber-400/70" : "bg-slate-500/60",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform",
+                              diurnoFolga ? "translate-x-4" : "translate-x-0.5",
+                            )}
+                          />
+                        </span>
+                        <span className="font-medium">Folguista (a cobrir)</span>
                       </label>
                     </div>
 
@@ -221,7 +243,14 @@ export function DayModal({
                         </svg>
                         Plantao Noturno
                       </h4>
-                      <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                      <label
+                        className={cn(
+                          "inline-flex cursor-pointer select-none items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm transition-colors",
+                          noturnoFolga
+                            ? "border-indigo-400/60 bg-indigo-500/20 text-indigo-100"
+                            : "border-slate-600 bg-slate-800/60 text-slate-300 hover:border-slate-500 hover:bg-slate-700/80",
+                        )}
+                      >
                         <input
                           type="checkbox"
                           checked={noturnoFolga}
@@ -232,9 +261,22 @@ export function DayModal({
                               setSelectedNoturnoFolguista(firstFolguistaId);
                             }
                           }}
-                          className="rounded border-slate-500 bg-slate-800 text-indigo-500 focus:ring-indigo-500/50"
+                          className="peer sr-only"
                         />
-                        Folga (Cobrir)
+                        <span
+                          className={cn(
+                            "relative h-5 w-9 rounded-full transition-colors",
+                            noturnoFolga ? "bg-indigo-400/70" : "bg-slate-500/60",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform",
+                              noturnoFolga ? "translate-x-4" : "translate-x-0.5",
+                            )}
+                          />
+                        </span>
+                        <span className="font-medium">Folguista (a cobrir)</span>
                       </label>
                     </div>
 
