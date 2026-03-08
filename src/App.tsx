@@ -62,9 +62,10 @@ export function App() {
     type: "diurno" | "noturno",
     nurseId: string | null,
     isFolga: boolean,
+    folguistaId: string | null,
   ) => {
     if (selectedDay) {
-      updateAssignment(selectedDay.date, type, nurseId, isFolga);
+      updateAssignment(selectedDay.date, type, nurseId, isFolga, folguistaId);
     }
   };
 
@@ -73,7 +74,7 @@ export function App() {
     return nurses.find((n) => n.id === id);
   };
 
-  const folguista = nurses.find((n) => n.role === "folguista");
+  const defaultFolguista = nurses.find((n) => n.role === "folguista");
 
   const getNurseStyle = (colorClass: string) => {
     const colorMap: Record<string, string> = {
@@ -366,11 +367,17 @@ export function App() {
                   const isEven = day.getDate() % 2 === 0;
 
                   const diurnoNurse = schedule?.diurno.isFolga
-                    ? folguista
+                    ? getNurse(
+                        schedule?.diurno.folguistaId || defaultFolguista?.id || null,
+                      )
                     : getNurse(schedule?.diurno.nurseId || null);
 
                   const noturnoNurse = schedule?.noturno.isFolga
-                    ? folguista
+                    ? getNurse(
+                        schedule?.noturno.folguistaId ||
+                          defaultFolguista?.id ||
+                          null,
+                      )
                     : getNurse(schedule?.noturno.nurseId || null);
 
                   const hasFolguista =

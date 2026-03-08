@@ -10,6 +10,7 @@ export interface Nurse {
 export interface ShiftAssignment {
   nurseId: string | null;
   isFolga?: boolean; // If true, the standard nurse is off, and folguista takes over
+  folguistaId?: string | null;
 }
 
 export interface DaySchedule {

@@ -19,6 +19,7 @@ interface DayModalProps {
     type: "diurno" | "noturno",
     nurseId: string | null,
     isFolga: boolean,
+    folguistaId: string | null,
   ) => void;
 }
 
@@ -29,11 +30,18 @@ export function DayModal({
   nurses,
   onSave,
 }: DayModalProps) {
+  const standardNurses = nurses.filter((n) => n.role === "padrao");
+  const folguistas = nurses.filter((n) => n.role === "folguista");
+  const firstFolguistaId = folguistas[0]?.id ?? null;
+
   const [selectedDiurno, setSelectedDiurno] = useState(
     daySchedule.diurno.nurseId,
   );
   const [diurnoFolga, setDiurnoFolga] = useState(
     daySchedule.diurno.isFolga || false,
+  );
+  const [selectedDiurnoFolguista, setSelectedDiurnoFolguista] = useState(
+    daySchedule.diurno.folguistaId || firstFolguistaId,
   );
 
   const [selectedNoturno, setSelectedNoturno] = useState(
@@ -42,22 +50,38 @@ export function DayModal({
   const [noturnoFolga, setNoturnoFolga] = useState(
     daySchedule.noturno.isFolga || false,
   );
+  const [selectedNoturnoFolguista, setSelectedNoturnoFolguista] = useState(
+    daySchedule.noturno.folguistaId || firstFolguistaId,
+  );
 
   useEffect(() => {
     setSelectedDiurno(daySchedule.diurno.nurseId);
     setDiurnoFolga(daySchedule.diurno.isFolga || false);
+    setSelectedDiurnoFolguista(
+      daySchedule.diurno.folguistaId || firstFolguistaId,
+    );
     setSelectedNoturno(daySchedule.noturno.nurseId);
     setNoturnoFolga(daySchedule.noturno.isFolga || false);
-  }, [daySchedule]);
+    setSelectedNoturnoFolguista(
+      daySchedule.noturno.folguistaId || firstFolguistaId,
+    );
+  }, [daySchedule, firstFolguistaId]);
 
   const handleSave = () => {
-    onSave("diurno", selectedDiurno, diurnoFolga);
-    onSave("noturno", selectedNoturno, noturnoFolga);
+    onSave(
+      "diurno",
+      selectedDiurno,
+      diurnoFolga,
+      diurnoFolga ? selectedDiurnoFolguista : null,
+    );
+    onSave(
+      "noturno",
+      selectedNoturno,
+      noturnoFolga,
+      noturnoFolga ? selectedNoturnoFolguista : null,
+    );
     onClose();
   };
-
-  const folguista = nurses.find((n) => n.role === "folguista");
-  const standardNurses = nurses.filter((n) => n.role === "padrao");
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -119,7 +143,13 @@ export function DayModal({
                         <input
                           type="checkbox"
                           checked={diurnoFolga}
-                          onChange={(e) => setDiurnoFolga(e.target.checked)}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setDiurnoFolga(checked);
+                            if (checked && !selectedDiurnoFolguista) {
+                              setSelectedDiurnoFolguista(firstFolguistaId);
+                            }
+                          }}
                           className="rounded border-slate-500 bg-slate-800 text-yellow-500 focus:ring-yellow-500/50"
                         />
                         Folga (Cobrir)
@@ -141,10 +171,34 @@ export function DayModal({
                         ))}
                     </select>
 
-                    {diurnoFolga && folguista && (
-                      <div className="mt-2 text-sm text-emerald-400 flex items-center gap-2 bg-emerald-400/10 p-2 rounded">
-                        <span>Cobertura automatica:</span>
-                        <span className="font-bold">{folguista.name}</span>
+                    {diurnoFolga && (
+                      <div className="mt-2 rounded border border-emerald-500/30 bg-emerald-500/10 p-2">
+                        {folguistas.length > 0 ? (
+                          <div className="space-y-1">
+                            <span className="text-xs uppercase tracking-wide text-emerald-300">
+                              Folguista de cobertura
+                            </span>
+                            <select
+                              value={selectedDiurnoFolguista || ""}
+                              onChange={(e) =>
+                                setSelectedDiurnoFolguista(
+                                  e.target.value || null,
+                                )
+                              }
+                              className="w-full bg-slate-800 border-slate-600 text-white rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500/50 outline-none"
+                            >
+                              {folguistas.map((nurse) => (
+                                <option key={nurse.id} value={nurse.id}>
+                                  {nurse.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-amber-300">
+                            Nenhum folguista cadastrado para cobertura.
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -171,7 +225,13 @@ export function DayModal({
                         <input
                           type="checkbox"
                           checked={noturnoFolga}
-                          onChange={(e) => setNoturnoFolga(e.target.checked)}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setNoturnoFolga(checked);
+                            if (checked && !selectedNoturnoFolguista) {
+                              setSelectedNoturnoFolguista(firstFolguistaId);
+                            }
+                          }}
                           className="rounded border-slate-500 bg-slate-800 text-indigo-500 focus:ring-indigo-500/50"
                         />
                         Folga (Cobrir)
@@ -193,10 +253,34 @@ export function DayModal({
                         ))}
                     </select>
 
-                    {noturnoFolga && folguista && (
-                      <div className="mt-2 text-sm text-emerald-400 flex items-center gap-2 bg-emerald-400/10 p-2 rounded">
-                        <span>Cobertura automatica:</span>
-                        <span className="font-bold">{folguista.name}</span>
+                    {noturnoFolga && (
+                      <div className="mt-2 rounded border border-emerald-500/30 bg-emerald-500/10 p-2">
+                        {folguistas.length > 0 ? (
+                          <div className="space-y-1">
+                            <span className="text-xs uppercase tracking-wide text-emerald-300">
+                              Folguista de cobertura
+                            </span>
+                            <select
+                              value={selectedNoturnoFolguista || ""}
+                              onChange={(e) =>
+                                setSelectedNoturnoFolguista(
+                                  e.target.value || null,
+                                )
+                              }
+                              className="w-full bg-slate-800 border-slate-600 text-white rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500/50 outline-none"
+                            >
+                              {folguistas.map((nurse) => (
+                                <option key={nurse.id} value={nurse.id}>
+                                  {nurse.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-amber-300">
+                            Nenhum folguista cadastrado para cobertura.
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>

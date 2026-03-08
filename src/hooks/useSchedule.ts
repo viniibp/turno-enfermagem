@@ -44,8 +44,8 @@ export function useSchedule() {
     return (
       assignments[dateStr] || {
         date: dateStr,
-        diurno: { nurseId: null },
-        noturno: { nurseId: null },
+        diurno: { nurseId: null, folguistaId: null },
+        noturno: { nurseId: null, folguistaId: null },
       }
     );
   };
@@ -55,19 +55,25 @@ export function useSchedule() {
     type: "diurno" | "noturno",
     nurseId: string | null,
     isFolga: boolean = false,
+    folguistaId: string | null = null,
   ) => {
     setAssignments((prev) => {
       const current = prev[dateStr] || {
         date: dateStr,
-        diurno: { nurseId: null },
-        noturno: { nurseId: null },
+        diurno: { nurseId: null, folguistaId: null },
+        noturno: { nurseId: null, folguistaId: null },
       };
 
       const newAssignments = {
         ...prev,
         [dateStr]: {
           ...current,
-          [type]: { nurseId, isFolga },
+          [type]: {
+            ...current[type],
+            nurseId,
+            isFolga,
+            folguistaId: isFolga ? folguistaId : null,
+          },
         },
       };
 
@@ -95,8 +101,8 @@ export function useSchedule() {
 
             const targetCurrent = newAssignments[targetDateStr] || {
               date: targetDateStr,
-              diurno: { nurseId: null },
-              noturno: { nurseId: null },
+              diurno: { nurseId: null, folguistaId: null },
+              noturno: { nurseId: null, folguistaId: null },
             };
 
             newAssignments[targetDateStr] = {
@@ -105,6 +111,7 @@ export function useSchedule() {
                 ...targetCurrent[type],
                 nurseId: nurseId,
                 isFolga: false,
+                folguistaId: null,
               }, // Reset folga when applying pattern
             };
           }
@@ -137,12 +144,16 @@ export function useSchedule() {
       for (const [dateStr, schedule] of Object.entries(prev)) {
         const diurno =
           schedule.diurno.nurseId === nurseId
-            ? { nurseId: null, isFolga: false }
-            : schedule.diurno;
+            ? { nurseId: null, isFolga: false, folguistaId: null }
+            : schedule.diurno.folguistaId === nurseId
+              ? { ...schedule.diurno, folguistaId: null }
+              : schedule.diurno;
         const noturno =
           schedule.noturno.nurseId === nurseId
-            ? { nurseId: null, isFolga: false }
-            : schedule.noturno;
+            ? { nurseId: null, isFolga: false, folguistaId: null }
+            : schedule.noturno.folguistaId === nurseId
+              ? { ...schedule.noturno, folguistaId: null }
+              : schedule.noturno;
 
         updated[dateStr] = {
           ...schedule,
@@ -172,8 +183,8 @@ export function useSchedule() {
 
       const current = newAssignments[dateStr] || {
         date: dateStr,
-        diurno: { nurseId: null },
-        noturno: { nurseId: null },
+        diurno: { nurseId: null, folguistaId: null },
+        noturno: { nurseId: null, folguistaId: null },
       };
 
       newAssignments[dateStr] = {
@@ -181,10 +192,12 @@ export function useSchedule() {
         diurno: {
           nurseId: isEven ? diurnoParId : diurnoImparId,
           isFolga: false,
+          folguistaId: null,
         },
         noturno: {
           nurseId: isEven ? noturnoParId : noturnoImparId,
           isFolga: false,
+          folguistaId: null,
         },
       };
     }
