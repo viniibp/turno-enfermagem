@@ -5,6 +5,7 @@ import { getDaysInMonth, format, parse } from "date-fns";
 const NURSES_STORAGE_KEY = "turno-enfermagem:nurses";
 const ASSIGNMENTS_STORAGE_KEY = "turno-enfermagem:assignments";
 const CURRENT_DATE_STORAGE_KEY = "turno-enfermagem:current-date";
+type UpdateScope = "single" | "parity";
 
 const normalizeShiftAssignment = (shift: unknown): ShiftAssignment => {
   if (!shift || typeof shift !== "object") {
@@ -141,6 +142,7 @@ export function useSchedule() {
     nurseId: string | null,
     isFolga: boolean = false,
     folguistaId: string | null = null,
+    scope: UpdateScope = "single",
   ) => {
     setAssignments((prev) => {
       const current = prev[dateStr] || {
@@ -164,7 +166,7 @@ export function useSchedule() {
 
       // Auto-fill logic for "Even/Odd" days if a standard nurse is selected
       // "ao colocar o diurno em um dia par, ele vai ser automaticamente colocado em todos os dias pares"
-      if (nurseId && !isFolga) {
+      if (scope === "parity" && nurseId && !isFolga) {
         const parsedDate = parse(dateStr, "yyyy-MM-dd", new Date());
         const day = parsedDate.getDate();
         const isEven = day % 2 === 0;

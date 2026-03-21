@@ -65,7 +65,14 @@ export function App() {
     folguistaId: string | null,
   ) => {
     if (selectedDay) {
-      updateAssignment(selectedDay.date, type, nurseId, isFolga, folguistaId);
+      updateAssignment(
+        selectedDay.date,
+        type,
+        nurseId,
+        isFolga,
+        folguistaId,
+        "single",
+      );
     }
   };
 
@@ -78,16 +85,16 @@ export function App() {
 
   const getNurseStyle = (colorClass: string) => {
     const colorMap: Record<string, string> = {
-      "bg-emerald-600": "text-emerald-200 bg-emerald-500/20",
-      "bg-blue-600": "text-blue-200 bg-blue-500/20",
-      "bg-amber-600": "text-amber-200 bg-amber-500/20",
-      "bg-purple-600": "text-purple-200 bg-purple-500/20",
-      "bg-rose-600": "text-rose-200 bg-rose-500/20",
-      "bg-cyan-600": "text-cyan-200 bg-cyan-500/20",
-      "bg-pink-600": "text-pink-200 bg-pink-500/20",
-      "bg-indigo-600": "text-indigo-200 bg-indigo-500/20",
+      "bg-emerald-600": "text-emerald-50 bg-emerald-500/40 ring-1 ring-emerald-200/35",
+      "bg-blue-600": "text-blue-50 bg-blue-500/40 ring-1 ring-blue-200/35",
+      "bg-amber-600": "text-amber-50 bg-amber-500/40 ring-1 ring-amber-200/35",
+      "bg-purple-600": "text-purple-50 bg-purple-500/40 ring-1 ring-purple-200/35",
+      "bg-rose-600": "text-rose-50 bg-rose-500/40 ring-1 ring-rose-200/35",
+      "bg-cyan-600": "text-cyan-50 bg-cyan-500/40 ring-1 ring-cyan-200/35",
+      "bg-pink-600": "text-pink-50 bg-pink-500/40 ring-1 ring-pink-200/35",
+      "bg-indigo-600": "text-indigo-50 bg-indigo-500/40 ring-1 ring-indigo-200/35",
     };
-    return colorMap[colorClass] || "text-slate-200 bg-slate-500/20";
+    return colorMap[colorClass] || "text-slate-50 bg-slate-500/40 ring-1 ring-slate-200/30";
   };
 
   const captureCalendarCanvas = async () => {
@@ -321,15 +328,15 @@ export function App() {
               <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-3 sm:gap-4 sm:text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-blue-900/50 border border-blue-500/30" />
-                  <span className="text-slate-400">Dia Impar</span>
+                  <span className="text-slate-200 font-medium">Dia Impar</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-rose-900/50 border border-rose-500/30" />
-                  <span className="text-slate-400">Dia Par</span>
+                  <span className="text-slate-200 font-medium">Dia Par</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-amber-900/50 border border-amber-500/30" />
-                  <span className="text-slate-400">Folga</span>
+                  <span className="text-slate-200 font-medium">Folga</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -354,7 +361,7 @@ export function App() {
                 {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"].map((day) => (
                   <div
                     key={day}
-                    className="bg-slate-900 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 sm:text-sm"
+                    className="bg-slate-900 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-200 sm:text-sm"
                   >
                     {day}
                   </div>
@@ -379,6 +386,8 @@ export function App() {
                           null,
                       )
                     : getNurse(schedule?.noturno.nurseId || null);
+                  const diurnoIsFolguista = schedule?.diurno.isFolga === true;
+                  const noturnoIsFolguista = schedule?.noturno.isFolga === true;
 
                   const hasFolguista =
                     schedule?.diurno.isFolga || schedule?.noturno.isFolga;
@@ -392,10 +401,10 @@ export function App() {
                         !isCurrentMonth
                           ? "bg-slate-950/80 opacity-40 grayscale"
                           : hasFolguista
-                            ? "bg-amber-900/30 hover:bg-amber-900/40"
+                            ? "bg-amber-900/40 hover:bg-amber-900/50"
                             : isEven
-                              ? "bg-rose-900/20 hover:bg-rose-900/30"
-                              : "bg-blue-900/20 hover:bg-blue-900/30",
+                              ? "bg-rose-900/30 hover:bg-rose-900/40"
+                              : "bg-blue-900/30 hover:bg-blue-900/40",
                         isToday(day) && "ring-1 ring-inset ring-white/30",
                       )}
                     >
@@ -405,7 +414,7 @@ export function App() {
                             "rounded px-1.5 py-0.5 text-xs font-semibold",
                             isToday(day)
                               ? "bg-white text-slate-900"
-                              : "text-slate-400 group-hover:text-white",
+                              : "text-slate-200 group-hover:text-white",
                           )}
                         >
                           {format(day, "dd/MM")}
@@ -428,20 +437,40 @@ export function App() {
                                 d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
                               />
                             </svg>
-                            <span className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">
+                            <span className="text-[10px] uppercase tracking-wider text-slate-200 font-semibold">
                               Diurno
                             </span>
+                            {diurnoIsFolguista && (
+                              <span className="inline-flex items-center rounded-full bg-amber-400/30 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-100 ring-1 ring-amber-300/50">
+                                Folguista
+                              </span>
+                            )}
                           </div>
-                          <span
+                          <div
                             className={cn(
-                              "font-bold text-xs px-1.5 py-0.5 rounded w-fit max-w-full truncate",
+                              "inline-flex w-fit max-w-full items-center gap-1 rounded px-1.5 py-0.5 text-xs font-bold",
                               diurnoNurse
                                 ? cn("shadow-sm", getNurseStyle(diurnoNurse.color))
-                                : "text-slate-500 italic pl-0",
+                                : "text-slate-300 italic pl-0",
                             )}
                           >
-                            {diurnoNurse?.name || "---"}
-                          </span>
+                            <span className="truncate">{diurnoNurse?.name || "---"}</span>
+                            {diurnoIsFolguista && (
+                              <span
+                                title="Cobertura de folguista"
+                                className="inline-flex h-5 w-5 items-center justify-center rounded bg-amber-300/35 text-amber-50 ring-1 ring-amber-200/60"
+                              >
+                                <svg
+                                  className="h-3.5 w-3.5"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-3.33 0-6 2.67-6 6h12c0-3.33-2.67-6-6-6z" />
+                                </svg>
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         <div className="flex flex-col gap-0.5">
@@ -459,20 +488,40 @@ export function App() {
                                 d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
                               />
                             </svg>
-                            <span className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">
+                            <span className="text-[10px] uppercase tracking-wider text-slate-200 font-semibold">
                               Noturno
                             </span>
+                            {noturnoIsFolguista && (
+                              <span className="inline-flex items-center rounded-full bg-amber-400/30 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-100 ring-1 ring-amber-300/50">
+                                Folguista
+                              </span>
+                            )}
                           </div>
-                          <span
+                          <div
                             className={cn(
-                              "font-bold text-xs px-1.5 py-0.5 rounded w-fit max-w-full truncate",
+                              "inline-flex w-fit max-w-full items-center gap-1 rounded px-1.5 py-0.5 text-xs font-bold",
                               noturnoNurse
                                 ? cn("shadow-sm", getNurseStyle(noturnoNurse.color))
-                                : "text-slate-500 italic pl-0",
+                                : "text-slate-300 italic pl-0",
                             )}
                           >
-                            {noturnoNurse?.name || "---"}
-                          </span>
+                            <span className="truncate">{noturnoNurse?.name || "---"}</span>
+                            {noturnoIsFolguista && (
+                              <span
+                                title="Cobertura de folguista"
+                                className="inline-flex h-5 w-5 items-center justify-center rounded bg-amber-300/35 text-amber-50 ring-1 ring-amber-200/60"
+                              >
+                                <svg
+                                  className="h-3.5 w-3.5"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-3.33 0-6 2.67-6 6h12c0-3.33-2.67-6-6-6z" />
+                                </svg>
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </button>

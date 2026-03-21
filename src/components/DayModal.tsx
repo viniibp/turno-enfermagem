@@ -72,18 +72,58 @@ export function DayModal({
   }, [daySchedule, firstFolguistaId]);
 
   const handleSave = () => {
-    onSave(
-      "diurno",
-      selectedDiurno,
-      diurnoFolga,
-      diurnoFolga ? selectedDiurnoFolguista : null,
-    );
-    onSave(
-      "noturno",
-      selectedNoturno,
-      noturnoFolga,
-      noturnoFolga ? selectedNoturnoFolguista : null,
-    );
+    const nextDiurno = {
+      nurseId: selectedDiurno,
+      isFolga: diurnoFolga,
+      folguistaId: diurnoFolga ? selectedDiurnoFolguista : null,
+    };
+    const currentDiurno = {
+      nurseId: daySchedule.diurno.nurseId,
+      isFolga: daySchedule.diurno.isFolga || false,
+      folguistaId: daySchedule.diurno.isFolga
+        ? (daySchedule.diurno.folguistaId ?? null)
+        : null,
+    };
+    const diurnoChanged =
+      nextDiurno.nurseId !== currentDiurno.nurseId ||
+      nextDiurno.isFolga !== currentDiurno.isFolga ||
+      nextDiurno.folguistaId !== currentDiurno.folguistaId;
+
+    if (diurnoChanged) {
+      onSave(
+        "diurno",
+        nextDiurno.nurseId,
+        nextDiurno.isFolga,
+        nextDiurno.folguistaId,
+      );
+    }
+
+    const nextNoturno = {
+      nurseId: selectedNoturno,
+      isFolga: noturnoFolga,
+      folguistaId: noturnoFolga ? selectedNoturnoFolguista : null,
+    };
+    const currentNoturno = {
+      nurseId: daySchedule.noturno.nurseId,
+      isFolga: daySchedule.noturno.isFolga || false,
+      folguistaId: daySchedule.noturno.isFolga
+        ? (daySchedule.noturno.folguistaId ?? null)
+        : null,
+    };
+    const noturnoChanged =
+      nextNoturno.nurseId !== currentNoturno.nurseId ||
+      nextNoturno.isFolga !== currentNoturno.isFolga ||
+      nextNoturno.folguistaId !== currentNoturno.folguistaId;
+
+    if (noturnoChanged) {
+      onSave(
+        "noturno",
+        nextNoturno.nurseId,
+        nextNoturno.isFolga,
+        nextNoturno.folguistaId,
+      );
+    }
+
     onClose();
   };
 
