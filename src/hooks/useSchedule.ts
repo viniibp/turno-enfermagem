@@ -1,11 +1,52 @@
 import { useState, useEffect } from "react";
-import { Nurse, DaySchedule } from "@/types";
+import { Nurse, DaySchedule, ShiftAssignment } from "@/types";
 import { getDaysInMonth, format, parse } from "date-fns";
 
 const NURSES_STORAGE_KEY = "turno-enfermagem:nurses";
+const ASSIGNMENTS_STORAGE_KEY = "turno-enfermagem:assignments";
+const CURRENT_DATE_STORAGE_KEY = "turno-enfermagem:current-date";
+
+const normalizeShiftAssignment = (shift: unknown): ShiftAssignment => {
+  if (!shift || typeof shift !== "object") {
+    return { nurseId: null, isFolga: false, folguistaId: null };
+  }
+
+  const parsed = shift as Partial<ShiftAssignment>;
+  return {
+    nurseId: typeof parsed.nurseId === "string" ? parsed.nurseId : null,
+    isFolga: parsed.isFolga === true,
+    folguistaId: typeof parsed.folguistaId === "string" ? parsed.folguistaId : null,
+  };
+};
+
+const normalizeDaySchedule = (
+  dateStr: string,
+  schedule: unknown,
+): DaySchedule | null => {
+  if (!schedule || typeof schedule !== "object") return null;
+
+  const parsed = schedule as Partial<DaySchedule>;
+  return {
+    date: typeof parsed.date === "string" ? parsed.date : dateStr,
+    diurno: normalizeShiftAssignment(parsed.diurno),
+    noturno: normalizeShiftAssignment(parsed.noturno),
+  };
+};
 
 export function useSchedule() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => {
+    if (typeof window === "undefined") return new Date();
+
+    try {
+      const stored = window.localStorage.getItem(CURRENT_DATE_STORAGE_KEY);
+      if (!stored) return new Date();
+
+      const parsed = new Date(stored);
+      return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+    } catch {
+      return new Date();
+    }
+  });
   const [nurses, setNurses] = useState<Nurse[]>(() => {
     if (typeof window === "undefined") return [];
 
@@ -28,7 +69,29 @@ export function useSchedule() {
     }
   });
   const [assignments, setAssignments] = useState<Record<string, DaySchedule>>(
-    {},
+    () => {
+      if (typeof window === "undefined") return {};
+
+      try {
+        const stored = window.localStorage.getItem(ASSIGNMENTS_STORAGE_KEY);
+        if (!stored) return {};
+
+        const parsed = JSON.parse(stored);
+        if (!parsed || typeof parsed !== "object") return {};
+
+        const normalized: Record<string, DaySchedule> = {};
+        for (const [dateStr, schedule] of Object.entries(parsed)) {
+          const daySchedule = normalizeDaySchedule(dateStr, schedule);
+          if (daySchedule) {
+            normalized[dateStr] = daySchedule;
+          }
+        }
+
+        return normalized;
+      } catch {
+        return {};
+      }
+    },
   );
 
   useEffect(() => {
@@ -38,6 +101,28 @@ export function useSchedule() {
       // Ignore persistence errors (private mode or quota issues)
     }
   }, [nurses]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        ASSIGNMENTS_STORAGE_KEY,
+        JSON.stringify(assignments),
+      );
+    } catch {
+      // Ignore persistence errors (private mode or quota issues)
+    }
+  }, [assignments]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        CURRENT_DATE_STORAGE_KEY,
+        currentDate.toISOString(),
+      );
+    } catch {
+      // Ignore persistence errors (private mode or quota issues)
+    }
+  }, [currentDate]);
 
   // Helper to get assignment for a specific date, creating it if missing
   const getAssignment = (dateStr: string): DaySchedule => {
