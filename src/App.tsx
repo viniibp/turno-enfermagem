@@ -441,9 +441,14 @@ export function App() {
                               Diurno
                             </span>
                             {diurnoIsFolguista && (
-                              <span className="inline-flex items-center rounded-full bg-amber-400/30 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-100 ring-1 ring-amber-300/50">
-                                Folguista
-                              </span>
+                              <>
+                                <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-400/35 px-1 text-[9px] font-black leading-none text-amber-100 ring-1 ring-amber-300/50 sm:hidden">
+                                  F
+                                </span>
+                                <span className="hidden items-center rounded-full bg-amber-400/30 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-100 ring-1 ring-amber-300/50 sm:inline-flex">
+                                  Folguista
+                                </span>
+                              </>
                             )}
                           </div>
                           <div
@@ -492,9 +497,14 @@ export function App() {
                               Noturno
                             </span>
                             {noturnoIsFolguista && (
-                              <span className="inline-flex items-center rounded-full bg-amber-400/30 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-100 ring-1 ring-amber-300/50">
-                                Folguista
-                              </span>
+                              <>
+                                <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-400/35 px-1 text-[9px] font-black leading-none text-amber-100 ring-1 ring-amber-300/50 sm:hidden">
+                                  F
+                                </span>
+                                <span className="hidden items-center rounded-full bg-amber-400/30 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-100 ring-1 ring-amber-300/50 sm:inline-flex">
+                                  Folguista
+                                </span>
+                              </>
                             )}
                           </div>
                           <div
